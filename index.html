@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpringWell System Configurator</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #0b6cff;
+      --ok: #16a34a;
+      --warn: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+      padding: 14px 18px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { height: 36px; width: auto; }
+    .brand h1 { margin: 0; font-size: 18px; }
+    .brand p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+
+    .wrap {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .side { padding: 14px; }
+    .main { padding: 14px; }
+
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .tab {
+      border: 1px solid var(--line);
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab.active { background: #e8f0ff; border-color: #c9dbff; color: #1146b0; }
+
+    .product-list { max-height: 46vh; overflow: auto; display: grid; gap: 8px; }
+    .product {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      background: #fff;
+    }
+    .product.selected { border-color: var(--primary); background: #eef5ff; }
+    .product h4 { margin: 0 0 4px; font-size: 14px; }
+    .product p { margin: 0; font-size: 12px; color: var(--muted); }
+
+    .section-title { margin: 14px 0 8px; font-size: 13px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: .03em; }
+
+    .order-list { display: grid; gap: 6px; }
+    .order-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px;
+      background: #fafafa;
+      font-size: 13px;
+    }
+    .order-actions button {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 6px;
+      margin-left: 4px;
+      cursor: pointer;
+      width: 26px;
+      height: 26px;
+    }
+
+    .inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .field input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr)); gap: 8px; margin-bottom: 10px; }
+    .metric { background: #f8fafc; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+    .metric label { display: block; font-size: 11px; color: var(--muted); }
+    .metric strong { font-size: 18px; }
+
+    .canvas-wrap {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+      background: #fbfdff;
+      overflow: auto;
+      min-height: 420px;
+    }
+
+    .fit {
+      margin-top: 10px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      border: 1px solid;
+    }
+    .fit.ok { border-color: #86efac; background: #f0fdf4; color: #166534; }
+    .fit.bad { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+
+    @media (max-width: 980px) {
+      .wrap { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img src="./assets/springwell-logo-BDEpCnq3.webp" alt="SpringWell" onerror="this.style.display='none'">
+      <div>
+        <h1>System Configurator</h1>
+        <p>Build your water treatment layout</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <aside class="card side">
+      <div class="tabs">
+        <button class="tab active" data-tab="city">City Water</button>
+        <button class="tab" data-tab="well">Well Water</button>
+      </div>
+
+      <div id="products" class="product-list"></div>
+
+      <div class="section-title">Installation Order</div>
+      <div id="order" class="order-list"></div>
+
+      <div class="section-title">Room Inputs</div>
+      <div class="inputs">
+        <div class="field">
+          <label>Room Width (in)</label>
+          <input id="roomWidth" type="number" min="0" value="0">
+        </div>
+        <div class="field">
+          <label>Room Height (in)</label>
+          <input id="roomHeight" type="number" min="0" value="0">
+        </div>
+      </div>
+      <div class="field" style="margin-top:8px;">
+        <label>Tank Spacing: <span id="spacingLabel">6</span> in</label>
+        <input id="spacing" type="range" min="3" max="18" value="6">
+      </div>
+    </aside>
+
+    <main class="card main">
+      <div class="metrics">
+        <div class="metric"><label>Total Width</label><strong id="mWidth">0"</strong></div>
+        <div class="metric"><label>Max Height</label><strong id="mHeight">0"</strong></div>
+        <div class="metric"><label>Components</label><strong id="mCount">0</strong></div>
+        <div class="metric"><label>Flow (min GPM)</label><strong id="mFlow">0</strong></div>
+      </div>
+
+      <div class="canvas-wrap">
+        <svg id="layout" width="920" height="520" viewBox="0 0 920 520"></svg>
+      </div>
+
+      <div id="fitMsg" class="fit ok">Select products to visualize.</div>
+    </main>
+  </div>
+
+  <script>
+    const COMPONENT_ORDER = { well: 1, filter: 2, prefilter: 3, softener: 4, saltfree: 4, uv: 5 };
+
+    const COMPONENTS = {
+      PREFILTER: { code: 'PREFILTER', name: 'Sediment Filter', category: 'prefilter', w: 5, h: 14 },
+      PREFILTER20: { code: 'PREFILTER20', name: 'Sediment Filter 20"', category: 'prefilter', w: 5, h: 20 },
+      CF1: { code: 'CF1', name: 'CF1', category: 'filter', w: 9, h: 52 },
+      CF4: { code: 'CF4', name: 'CF4', category: 'filter', w: 10, h: 58 },
+      CFPLUS: { code: 'CFPLUS', name: 'CF+', category: 'filter', w: 13, h: 58 },
+      SS1: { code: 'SS1', name: 'SS1', category: 'softener', w: 9, h: 57, brineW: 18, brineH: 33 },
+      SS4: { code: 'SS4', name: 'SS4', category: 'softener', w: 10, h: 63, brineW: 18, brineH: 33 },
+      SSPLUS: { code: 'SSPLUS', name: 'SS+', category: 'softener', w: 13, h: 63, brineW: 18, brineH: 33 },
+      FS1: { code: 'FS1', name: 'FS1', category: 'saltfree', w: 6, h: 39 },
+      FS4: { code: 'FS4', name: 'FS4', category: 'saltfree', w: 9, h: 52 },
+      FSPLUS: { code: 'FSPLUS', name: 'FS+', category: 'saltfree', w: 13, h: 58 },
+      WS1: { code: 'WS1', name: 'WS1', category: 'well', w: 10, h: 64 },
+      WS4: { code: 'WS4', name: 'WS4', category: 'well', w: 13, h: 64 },
+      MMV1: { code: 'MMV1', name: 'MMV1 (CF+SS 2-in-1)', category: 'softener', w: 10, h: 57, brineW: 18, brineH: 33 },
+      MMV4: { code: 'MMV4', name: 'MMV4 (CF+SS 2-in-1)', category: 'softener', w: 13, h: 63, brineW: 18, brineH: 33 },
+      UV: { code: 'UV', name: 'UV System', category: 'uv', w: 4, h: 36 }
+    };
+
+    const SYSTEMS = [
+      { id: 'prefilter', tab: 'city', name: 'Sediment Pre-Filter', w: 5, h: 14, gpm: 15, desc: 'Removes sediment before main filtration', includes: ['PREFILTER'] },
+      { id: 'cf1', tab: 'city', name: 'CF1', w: 14, h: 52, gpm: 9, desc: 'Whole House Filter (1-3 baths)', includes: ['CF1', 'PREFILTER'] },
+      { id: 'cf4', tab: 'city', name: 'CF4', w: 15, h: 58, gpm: 12, desc: 'Whole House Filter (4-6 baths)', includes: ['CF4', 'PREFILTER'] },
+      { id: 'cfplus', tab: 'city', name: 'CF+', w: 18, h: 58, gpm: 20, desc: 'Whole House Filter (7+ baths)', includes: ['CFPLUS', 'PREFILTER20'] },
+      { id: 'ss1', tab: 'city', name: 'SS1', w: 9, h: 57, gpm: 11, desc: 'Salt-Based Softener (1-3 baths)', includes: ['SS1'] },
+      { id: 'ss4', tab: 'city', name: 'SS4', w: 10, h: 63, gpm: 13, desc: 'Salt-Based Softener (4-6 baths)', includes: ['SS4'] },
+      { id: 'ssplus', tab: 'city', name: 'SS+', w: 13, h: 63, gpm: 20, desc: 'Salt-Based Softener (7+ baths)', includes: ['SSPLUS'] },
+      { id: 'fs1', tab: 'city', name: 'FS1', w: 6, h: 39, gpm: 9, desc: 'FutureSoft Salt-Free (1-3 baths)', includes: ['FS1'] },
+      { id: 'fs4', tab: 'city', name: 'FS4', w: 9, h: 52, gpm: 12, desc: 'FutureSoft Salt-Free (4-6 baths)', includes: ['FS4'] },
+      { id: 'fsplus', tab: 'city', name: 'FS+', w: 13, h: 58, gpm: 20, desc: 'FutureSoft Salt-Free Plus (7+ baths)', includes: ['FSPLUS'] },
+      { id: 'csf1', tab: 'city', name: 'CSF1', w: 23, h: 52, gpm: 9, desc: 'CF + FutureSoft Combo', includes: ['CF1', 'PREFILTER', 'FS1'] },
+      { id: 'csf4', tab: 'city', name: 'CSF4', w: 25, h: 58, gpm: 12, desc: 'CF + FutureSoft Combo', includes: ['CF4', 'PREFILTER', 'FS4'] },
+      { id: 'css1', tab: 'city', name: 'CSS1', w: 23, h: 57, gpm: 9, desc: 'CF + Salt Softener Combo', includes: ['CF1', 'PREFILTER', 'SS1'] },
+      { id: 'css4', tab: 'city', name: 'CSS4', w: 25, h: 63, gpm: 12, desc: 'CF + Salt Softener Combo', includes: ['CF4', 'PREFILTER', 'SS4'] },
+      { id: 'mmv1', tab: 'city', name: 'MMV1', w: 10, h: 57, gpm: 11, desc: 'CF + Salt Softener 2-in-1', includes: ['MMV1'] },
+      { id: 'mmv4', tab: 'city', name: 'MMV4', w: 13, h: 63, gpm: 13, desc: 'CF + Salt Softener 2-in-1', includes: ['MMV4'] },
+      { id: 'uv', tab: 'city', name: 'UV System', w: 4, h: 36, gpm: 15, desc: 'UV Purification', includes: ['UV'] },
+
+      { id: 'ws1', tab: 'well', name: 'WS1', w: 10, h: 64, gpm: 12, desc: 'Well Filter (1-4 baths)', includes: ['WS1'] },
+      { id: 'ws4', tab: 'well', name: 'WS4', w: 13, h: 64, gpm: 20, desc: 'Well Filter (4+ baths)', includes: ['WS4'] },
+      { id: 'wssf1', tab: 'well', name: 'WSSF1', w: 19, h: 54, gpm: 10, desc: 'Well + Salt-Free Combo', includes: ['WS1', 'FS1'] },
+      { id: 'wssf4', tab: 'well', name: 'WSSF4', w: 23, h: 58, gpm: 15, desc: 'Well + Salt-Free Combo', includes: ['WS4', 'FS4'] },
+      { id: 'wsss1', tab: 'well', name: 'WSSS1', w: 19, h: 57, gpm: 10, desc: 'Well + Salt Softener Combo', includes: ['WS1', 'SS1'] },
+      { id: 'wsss4', tab: 'well', name: 'WSSS4', w: 23, h: 63, gpm: 15, desc: 'Well + Salt Softener Combo', includes: ['WS4', 'SS4'] },
+      { id: 'uws1', tab: 'well', name: 'UWS1', w: 33, h: 54, gpm: 9, desc: 'Ultra Well (WS+CF+SF)', includes: ['WS1', 'CF1', 'PREFILTER', 'FS1'] },
+      { id: 'uws4', tab: 'well', name: 'UWS4', w: 38, h: 58, gpm: 12, desc: 'Ultra Well (WS+CF+SF)', includes: ['WS4', 'CF4', 'PREFILTER', 'FS4'] },
+      { id: 'mws1', tab: 'well', name: 'MWS1', w: 41, h: 57, gpm: 9, desc: 'Well Master (WS+CF+SS)', includes: ['WS1', 'CF1', 'PREFILTER', 'SS1'] },
+      { id: 'mws4', tab: 'well', name: 'MWS4', w: 49, h: 63, gpm: 12, desc: 'Well Master (WS+CF+SS)', includes: ['WS4', 'CF4', 'PREFILTER', 'SS4'] }
+    ];
+
+    const COLORS = {
+      prefilter: '#64748b', filter: '#2563eb', softener: '#f59e0b', saltfree: '#16a34a',
+      uv: '#7c3aed', well: '#0ea5e9', combo: '#f97316'
+    };
+
+    let tab = 'city';
+    let selectedIds = [];
+
+    const productsEl = document.getElementById('products');
+    const orderEl = document.getElementById('order');
+    const svg = document.getElementById('layout');
+    const spacing = document.getElementById('spacing');
+
+    function inchesLabel(n) { return `${Math.round(n)}"`; }
+
+    function selectedSystems() {
+      const set = new Set(selectedIds);
+      return SYSTEMS.filter(s => set.has(s.id));
+    }
+
+    function expandSystem(system) {
+      return (system.includes || [])
+        .map((code, i) => {
+          const c = COMPONENTS[code];
+          if (!c) return null;
+          return {
+            ...c,
+            id: `${system.id}-${code}-${i}`,
+            sourceSystem: system.name,
+            order: COMPONENT_ORDER[c.category] || 99
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+    }
+
+    function renderProducts() {
+      const list = SYSTEMS.filter(p => p.tab === tab);
+      productsEl.innerHTML = list.map(p => {
+        const selected = selectedIds.includes(p.id);
+        const includesText = p.includes && p.includes.length > 1 ? `Includes: ${p.includes.join(' + ')}` : '';
+        return `<article class="product ${selected ? 'selected' : ''}" data-id="${p.id}">
+          <h4>${p.name}</h4>
+          <p>${p.desc}</p>
+          ${includesText ? `<p>${includesText}</p>` : ''}
+          <p>${p.w}\"W x ${p.h}\"H • ${p.gpm} GPM</p>
+        </article>`;
+      }).join('');
+
+      productsEl.querySelectorAll('.product').forEach(card => {
+        card.addEventListener('click', () => {
+          const id = card.dataset.id;
+          if (selectedIds.includes(id)) selectedIds = selectedIds.filter(x => x !== id);
+          else selectedIds.push(id);
+          renderAll();
+        });
+      });
+    }
+
+    function moveSelected(id, dir) {
+      const i = selectedIds.indexOf(id);
+      if (i < 0) return;
+      const j = i + dir;
+      if (j < 0 || j >= selectedIds.length) return;
+      [selectedIds[i], selectedIds[j]] = [selectedIds[j], selectedIds[i]];
+      renderAll();
+    }
+
+    function renderOrder() {
+      const list = selectedIds.map(id => SYSTEMS.find(p => p.id === id)).filter(Boolean);
+      orderEl.innerHTML = list.length ? list.map((p, idx) => `
+        <div class="order-item">
+          <div>${idx + 1}. ${p.name}</div>
+          <div class="order-actions">
+            <button data-up="${p.id}">↑</button>
+            <button data-down="${p.id}">↓</button>
+            <button data-del="${p.id}">×</button>
+          </div>
+        </div>
+      `).join('') : '<div style="color:#6b7280;font-size:13px;">No products selected yet.</div>';
+
+      orderEl.querySelectorAll('button[data-up]').forEach(btn => btn.onclick = () => moveSelected(btn.dataset.up, -1));
+      orderEl.querySelectorAll('button[data-down]').forEach(btn => btn.onclick = () => moveSelected(btn.dataset.down, 1));
+      orderEl.querySelectorAll('button[data-del]').forEach(btn => btn.onclick = () => {
+        selectedIds = selectedIds.filter(id => id !== btn.dataset.del);
+        renderAll();
+      });
+    }
+
+    function renderLayout() {
+      const roomWidth = Number(document.getElementById('roomWidth').value || 0);
+      const roomHeight = Number(document.getElementById('roomHeight').value || 0);
+      const gap = Number(spacing.value || 6);
+      document.getElementById('spacingLabel').textContent = String(gap);
+
+      const systems = selectedIds.map(id => SYSTEMS.find(p => p.id === id)).filter(Boolean);
+      const items = systems.flatMap(expandSystem);
+
+      const scale = 6;
+      const baseline = 420;
+      const startX = 40;
+      let x = startX;
+      let maxH = 0;
+      let totalW = 0;
+      let minGpm = 0;
+
+      const sequence = [];
+      items.forEach(item => {
+        sequence.push(item);
+        if (item.brineW) {
+          sequence.push({
+            id: item.id + '-brine',
+            category: 'softener',
+            name: 'Brine Tank',
+            w: item.brineW,
+            h: item.brineH || 33
+          });
+        }
+      });
+
+      const drawn = [];
+      sequence.forEach((item, idx) => {
+        drawn.push({
+          ...item,
+          x,
+          y: baseline - item.h * scale,
+          widthPx: item.w * scale,
+          heightPx: item.h * scale,
+          label: item.name
+        });
+        x += item.w * scale + (idx < sequence.length - 1 ? gap * scale : 0);
+        totalW += item.w;
+        maxH = Math.max(maxH, item.h);
+      });
+      if (sequence.length > 1) totalW += gap * (sequence.length - 1);
+      systems.forEach(s => {
+        minGpm = minGpm ? Math.min(minGpm, s.gpm) : s.gpm;
+      });
+
+      const requiredW = totalW + 12;
+      const requiredH = maxH + 12;
+      const fitsW = roomWidth === 0 || roomWidth >= requiredW;
+      const fitsH = roomHeight === 0 || roomHeight >= requiredH;
+      const fits = fitsW && fitsH;
+
+      document.getElementById('mWidth').textContent = inchesLabel(totalW);
+      document.getElementById('mHeight').textContent = inchesLabel(maxH);
+      document.getElementById('mCount').textContent = String(drawn.length);
+      document.getElementById('mFlow').textContent = String(minGpm || 0);
+
+      const fitMsg = document.getElementById('fitMsg');
+      if (!items.length) {
+        fitMsg.className = 'fit ok';
+        fitMsg.textContent = 'Select products to visualize.';
+      } else if (fits) {
+        fitMsg.className = 'fit ok';
+        fitMsg.textContent = `Fits room. Recommended minimum: ${requiredW}"W x ${requiredH}"H (includes 12" clearance).`;
+      } else {
+        fitMsg.className = 'fit bad';
+        fitMsg.textContent = `May not fit. Need ${requiredW}"W x ${requiredH}"H including clearance.`;
+      }
+
+      const roomRect = (roomWidth > 0 || roomHeight > 0)
+        ? `<rect x="${startX - 12}" y="${baseline - ((roomHeight || (maxH + 12)) * scale)}" width="${(roomWidth || requiredW) * scale}" height="${(roomHeight || requiredH) * scale}" fill="none" stroke="${fits ? '#16a34a' : '#dc2626'}" stroke-dasharray="10 6" stroke-width="2"/>`
+        : '';
+
+      const blocks = drawn.map((d, i) => {
+        const color = COLORS[d.category] || '#6b7280';
+        return `
+          <g>
+            <rect x="${d.x}" y="${d.y}" width="${d.widthPx}" height="${d.heightPx}" rx="8" fill="${color}" opacity="0.88"/>
+            <text x="${d.x + d.widthPx / 2}" y="${d.y - 8}" text-anchor="middle" font-size="11" fill="#111827">${d.label}</text>
+            <text x="${d.x + d.widthPx / 2}" y="${d.y + d.heightPx + 14}" text-anchor="middle" font-size="10" fill="#374151">${Math.round(d.widthPx/scale)}" x ${Math.round(d.heightPx/scale)}"</text>
+            <circle cx="${d.x + 10}" cy="${d.y + 12}" r="8" fill="white"/>
+            <text x="${d.x + 10}" y="${d.y + 15}" text-anchor="middle" font-size="10" fill="#111827">${i + 1}</text>
+          </g>`;
+      }).join('');
+
+      svg.innerHTML = `
+        <rect x="0" y="0" width="100%" height="100%" fill="#f8fbff"/>
+        ${roomRect}
+        <line x1="20" y1="${baseline}" x2="900" y2="${baseline}" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="8 6"/>
+        ${blocks}
+      `;
+    }
+
+    function renderAll() {
+      renderProducts();
+      renderOrder();
+      renderLayout();
+    }
+
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        tab = btn.dataset.tab;
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderProducts();
+      });
+    });
+
+    ['roomWidth', 'roomHeight', 'spacing'].forEach(id => {
+      document.getElementById(id).addEventListener('input', renderLayout);
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>
