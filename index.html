@@ -256,6 +256,15 @@
     const spacing = document.getElementById('spacing');
 
     function inchesLabel(n) { return `${Math.round(n)}"`; }
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+    function shadeHex(hex, amount) {
+      const c = hex.replace('#', '');
+      const n = parseInt(c, 16);
+      const r = clamp(((n >> 16) & 255) + amount, 0, 255);
+      const g = clamp(((n >> 8) & 255) + amount, 0, 255);
+      const b = clamp((n & 255) + amount, 0, 255);
+      return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+    }
 
     function selectedSystems() {
       const set = new Set(selectedIds);
@@ -410,13 +419,23 @@
 
       const blocks = drawn.map((d, i) => {
         const color = COLORS[d.category] || '#6b7280';
+        const dark = shadeHex(color, -38);
+        const light = shadeHex(color, 36);
+        const capH = Math.max(6, Math.min(14, d.widthPx * 0.24));
+        const chip = (d.category || 'x').slice(0, 2).toUpperCase();
+        const panelW = Math.max(12, Math.min(20, d.widthPx * 0.28));
         return `
           <g>
-            <rect x="${d.x}" y="${d.y}" width="${d.widthPx}" height="${d.heightPx}" rx="8" fill="${color}" opacity="0.88"/>
+            <ellipse cx="${d.x + d.widthPx / 2}" cy="${baseline + 4}" rx="${d.widthPx * 0.42}" ry="6" fill="#94a3b8" opacity="0.25"/>
+            <rect x="${d.x}" y="${d.y}" width="${d.widthPx}" height="${d.heightPx}" rx="${Math.max(7, d.widthPx * 0.14)}" fill="${color}" stroke="${dark}" stroke-width="1.5"/>
+            <ellipse cx="${d.x + d.widthPx / 2}" cy="${d.y + capH * 0.4}" rx="${d.widthPx * 0.48}" ry="${capH * 0.58}" fill="${light}" stroke="${dark}" stroke-width="1"/>
+            <rect x="${d.x + d.widthPx * 0.18}" y="${d.y + capH}" width="${Math.max(4, d.widthPx * 0.16)}" height="${Math.max(20, d.heightPx * 0.72)}" rx="4" fill="white" opacity="0.18"/>
+            <rect x="${d.x + d.widthPx * 0.62}" y="${d.y + d.heightPx * 0.18}" width="${panelW}" height="${Math.max(16, d.heightPx * 0.18)}" rx="4" fill="#0f172a" opacity="0.3"/>
+            <text x="${d.x + d.widthPx * 0.62 + panelW / 2}" y="${d.y + d.heightPx * 0.18 + Math.max(16, d.heightPx * 0.18) / 2 + 3}" text-anchor="middle" font-size="8" fill="#e2e8f0">${chip}</text>
             <text x="${d.x + d.widthPx / 2}" y="${d.y - 8}" text-anchor="middle" font-size="11" fill="#111827">${d.label}</text>
             <text x="${d.x + d.widthPx / 2}" y="${d.y + d.heightPx + 14}" text-anchor="middle" font-size="10" fill="#374151">${Math.round(d.widthPx/scale)}" x ${Math.round(d.heightPx/scale)}"</text>
-            <circle cx="${d.x + 10}" cy="${d.y + 12}" r="8" fill="white"/>
-            <text x="${d.x + 10}" y="${d.y + 15}" text-anchor="middle" font-size="10" fill="#111827">${i + 1}</text>
+            <circle cx="${d.x + 10}" cy="${d.y + 12}" r="8.6" fill="white" stroke="#cbd5e1"/>
+            <text x="${d.x + 10}" y="${d.y + 15}" text-anchor="middle" font-size="10" font-weight="700" fill="#111827">${i + 1}</text>
           </g>`;
       }).join('');
 
