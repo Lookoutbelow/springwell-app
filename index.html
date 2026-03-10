@@ -40,7 +40,7 @@
       margin: 0 auto;
       padding: 16px;
       display: grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: minmax(290px, 360px) 1fr;
       gap: 16px;
     }
     .card {
@@ -95,13 +95,13 @@
       border-radius: 6px;
       margin-left: 4px;
       cursor: pointer;
-      width: 26px;
-      height: 26px;
+      width: 30px;
+      height: 30px;
     }
 
     .inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-    .field input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+    .field input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 16px; }
 
     .metrics { display: grid; grid-template-columns: repeat(4, minmax(110px, 1fr)); gap: 8px; margin-bottom: 10px; }
     .metric { background: #f8fafc; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
@@ -116,6 +116,11 @@
       overflow: auto;
       min-height: 420px;
     }
+    #layout {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
 
     .fit {
       margin-top: 10px;
@@ -127,9 +132,32 @@
     .fit.ok { border-color: #86efac; background: #f0fdf4; color: #166534; }
     .fit.bad { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
 
+    @media (max-width: 1100px) {
+      .wrap { grid-template-columns: minmax(280px, 330px) 1fr; gap: 12px; }
+      .main, .side { padding: 12px; }
+    }
+
     @media (max-width: 980px) {
       .wrap { grid-template-columns: 1fr; }
       .metrics { grid-template-columns: 1fr 1fr; }
+      .product-list { max-height: 36vh; }
+      .canvas-wrap { min-height: 360px; }
+    }
+
+    @media (max-width: 640px) {
+      header { padding: 12px; }
+      .brand h1 { font-size: 16px; }
+      .brand p { font-size: 11px; }
+      .wrap { padding: 10px; gap: 10px; }
+      .side, .main { padding: 10px; }
+      .tabs { gap: 6px; }
+      .tab { padding: 9px 6px; font-size: 13px; }
+      .product h4 { font-size: 13px; }
+      .product p { font-size: 11px; }
+      .inputs { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: 1fr; }
+      .metric strong { font-size: 17px; }
+      .canvas-wrap { min-height: 300px; padding: 6px; }
     }
   </style>
 </head>
@@ -390,6 +418,9 @@
         minGpm = minGpm ? Math.min(minGpm, s.gpm) : s.gpm;
       });
 
+      const canvasWidth = Math.max(920, x + 40);
+      svg.setAttribute('viewBox', `0 0 ${canvasWidth} 520`);
+
       const requiredW = totalW + 12;
       const requiredH = maxH + 12;
       const fitsW = roomWidth === 0 || roomWidth >= requiredW;
@@ -486,7 +517,7 @@
       svg.innerHTML = `
         <rect x="0" y="0" width="100%" height="100%" fill="#f8fbff"/>
         ${roomRect}
-        <line x1="20" y1="${baseline}" x2="900" y2="${baseline}" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="8 6"/>
+        <line x1="20" y1="${baseline}" x2="${canvasWidth - 20}" y2="${baseline}" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="8 6"/>
         ${blocks}
       `;
     }
