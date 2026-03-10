@@ -424,8 +424,10 @@
         const capH = Math.max(6, Math.min(14, d.widthPx * 0.24));
         const chip = (d.category || 'x').slice(0, 2).toUpperCase();
         const panelW = Math.max(12, Math.min(20, d.widthPx * 0.28));
-        const hasHead = d.name !== 'Brine Tank' && d.category !== 'uv';
-        const headType = d.category === 'well' ? 'well' : (d.category === 'softener' ? 'soft' : 'std');
+        const hasHead = d.name !== 'Brine Tank' && d.category !== 'uv' && d.category !== 'prefilter';
+        const headType =
+          d.category === 'filter' || d.category === 'saltfree' ? 'normal'
+          : (d.category === 'well' || d.category === 'softener' ? 'electronic' : 'normal');
         const headW = Math.max(24, Math.min(d.widthPx * 1.02, 56));
         const headH = Math.max(12, Math.min(24, d.widthPx * 0.48));
         const headX = d.x + (d.widthPx - headW) / 2;
@@ -441,19 +443,24 @@
         const headMarkup = hasHead ? `
             <rect x="${headX}" y="${headY}" width="${headW}" height="${headH}" rx="4" fill="#f8fafc" stroke="#475569" stroke-width="1.25"/>
             <path d="M ${headX + 2} ${headY + headH * 0.48} L ${headX + headW - 2} ${headY + headH * 0.48} L ${headX + headW - 5} ${headY + headH - 2} L ${headX + 5} ${headY + headH - 2} Z" fill="#e2e8f0" stroke="#64748b" stroke-width="0.8"/>
-            <rect x="${headX + (headW - screenW) / 2}" y="${headY + 2}" width="${screenW}" height="${screenH}" rx="2" fill="#cbd5e1" stroke="#64748b" stroke-width="0.8"/>
-            <circle cx="${headX + headW * 0.2}" cy="${headY + headH * 0.24}" r="1.2" fill="#64748b"/>
-            <circle cx="${headX + headW * 0.8}" cy="${headY + headH * 0.24}" r="1.2" fill="#64748b"/>
+            ${headType === 'electronic' ? `
+              <rect x="${headX + (headW - screenW) / 2}" y="${headY + 2}" width="${screenW}" height="${screenH}" rx="2" fill="#cbd5e1" stroke="#64748b" stroke-width="0.8"/>
+              <circle cx="${headX + headW * 0.2}" cy="${headY + headH * 0.24}" r="1.2" fill="#64748b"/>
+              <circle cx="${headX + headW * 0.8}" cy="${headY + headH * 0.24}" r="1.2" fill="#64748b"/>
+            ` : `
+              <ellipse cx="${headX + headW * 0.5}" cy="${headY + headH * 0.22}" rx="${headW * 0.2}" ry="${headH * 0.14}" fill="#dbe3ec" stroke="#64748b" stroke-width="0.8"/>
+              <line x1="${headX + headW * 0.28}" y1="${headY + headH * 0.24}" x2="${headX + headW * 0.72}" y2="${headY + headH * 0.24}" stroke="#94a3b8" stroke-width="0.8"/>
+            `}
             <rect x="${neckX}" y="${headY + headH - 0.5}" width="${neckW}" height="${Math.max(4, capH * 0.48)}" rx="2" fill="#e2e8f0" stroke="#64748b" stroke-width="0.8"/>
             <line x1="${headX}" y1="${unionY}" x2="${headX - sideStub}" y2="${unionY}" stroke="#64748b" stroke-width="1.2"/>
             <line x1="${headX + headW}" y1="${unionY}" x2="${headX + headW + sideStub}" y2="${unionY}" stroke="#64748b" stroke-width="1.2"/>
             <circle cx="${headX - sideStub}" cy="${unionY}" r="${unionR}" fill="#e2e8f0" stroke="#64748b" stroke-width="0.8"/>
             <circle cx="${headX + headW + sideStub}" cy="${unionY}" r="${unionR}" fill="#e2e8f0" stroke="#64748b" stroke-width="0.8"/>
-            ${headType === 'well' ? `
+            ${d.category === 'well' ? `
               <rect x="${headX + headW * 0.12}" y="${headY - 5}" width="${Math.max(4, headW * 0.12)}" height="5" rx="1.5" fill="#e2e8f0" stroke="#64748b" stroke-width="0.8"/>
               <circle cx="${headX + headW * 0.18}" cy="${headY - 6.3}" r="1.3" fill="#cbd5e1" stroke="#64748b" stroke-width="0.7"/>
             ` : ''}
-            ${headType === 'soft' ? `
+            ${d.category === 'softener' ? `
               <circle cx="${headX + headW * 0.84}" cy="${headY + headH * 0.76}" r="2.1" fill="#cbd5e1" stroke="#64748b" stroke-width="0.8"/>
               <line x1="${headX + headW * 0.84}" y1="${headY + headH * 0.76}" x2="${headX + headW * 0.88}" y2="${headY + headH * 0.72}" stroke="#475569" stroke-width="0.9"/>
             ` : ''}
