@@ -424,11 +424,31 @@
         const capH = Math.max(6, Math.min(14, d.widthPx * 0.24));
         const chip = (d.category || 'x').slice(0, 2).toUpperCase();
         const panelW = Math.max(12, Math.min(20, d.widthPx * 0.28));
+        const hasHead = d.name !== 'Brine Tank' && d.category !== 'uv';
+        const headW = Math.max(16, Math.min(38, d.widthPx * 0.68));
+        const headH = Math.max(8, Math.min(16, d.widthPx * 0.34));
+        const headX = d.x + (d.widthPx - headW) / 2;
+        const headY = d.y - headH * 0.78;
+        const neckW = Math.max(6, Math.min(11, d.widthPx * 0.22));
+        const neckX = d.x + (d.widthPx - neckW) / 2;
+        const unionY = headY + headH * 0.58;
+        const unionR = 1.8;
+        const sideStub = Math.max(4, Math.min(8, d.widthPx * 0.14));
+        const headMarkup = hasHead ? `
+            <rect x="${headX}" y="${headY}" width="${headW}" height="${headH}" rx="3" fill="#f8fafc" stroke="#475569" stroke-width="1.2"/>
+            <rect x="${headX + headW * 0.28}" y="${headY + 2}" width="${headW * 0.44}" height="${headH * 0.34}" rx="2" fill="#cbd5e1" stroke="#64748b" stroke-width="0.8"/>
+            <rect x="${neckX}" y="${headY + headH}" width="${neckW}" height="${Math.max(3, capH * 0.42)}" rx="2" fill="#e2e8f0" stroke="#64748b" stroke-width="0.8"/>
+            <line x1="${headX}" y1="${unionY}" x2="${headX - sideStub}" y2="${unionY}" stroke="#64748b" stroke-width="1.2"/>
+            <line x1="${headX + headW}" y1="${unionY}" x2="${headX + headW + sideStub}" y2="${unionY}" stroke="#64748b" stroke-width="1.2"/>
+            <circle cx="${headX - sideStub}" cy="${unionY}" r="${unionR}" fill="#e2e8f0" stroke="#64748b" stroke-width="0.8"/>
+            <circle cx="${headX + headW + sideStub}" cy="${unionY}" r="${unionR}" fill="#e2e8f0" stroke="#64748b" stroke-width="0.8"/>
+        ` : '';
         return `
           <g>
             <ellipse cx="${d.x + d.widthPx / 2}" cy="${baseline + 4}" rx="${d.widthPx * 0.42}" ry="6" fill="#94a3b8" opacity="0.25"/>
             <rect x="${d.x}" y="${d.y}" width="${d.widthPx}" height="${d.heightPx}" rx="${Math.max(7, d.widthPx * 0.14)}" fill="${color}" stroke="${dark}" stroke-width="1.5"/>
             <ellipse cx="${d.x + d.widthPx / 2}" cy="${d.y + capH * 0.4}" rx="${d.widthPx * 0.48}" ry="${capH * 0.58}" fill="${light}" stroke="${dark}" stroke-width="1"/>
+            ${headMarkup}
             <rect x="${d.x + d.widthPx * 0.18}" y="${d.y + capH}" width="${Math.max(4, d.widthPx * 0.16)}" height="${Math.max(20, d.heightPx * 0.72)}" rx="4" fill="white" opacity="0.18"/>
             <rect x="${d.x + d.widthPx * 0.62}" y="${d.y + d.heightPx * 0.18}" width="${panelW}" height="${Math.max(16, d.heightPx * 0.18)}" rx="4" fill="#0f172a" opacity="0.3"/>
             <text x="${d.x + d.widthPx * 0.62 + panelW / 2}" y="${d.y + d.heightPx * 0.18 + Math.max(16, d.heightPx * 0.18) / 2 + 3}" text-anchor="middle" font-size="8" fill="#e2e8f0">${chip}</text>
